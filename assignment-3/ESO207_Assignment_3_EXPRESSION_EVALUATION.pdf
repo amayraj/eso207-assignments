@@ -1,0 +1,135 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<time.h>
+typedef long long int ll;
+
+typedef struct node
+{
+    ll val;
+    struct node* left;
+    struct node* right;
+}NODE;
+
+NODE** Arr;
+double* Time_i;
+
+NODE* CreateNode(ll x)
+{
+    NODE* temp = calloc(1,sizeof(NODE));
+    temp->val = x;
+    return temp;
+}
+
+void Traversal(NODE* T,ll* c)
+{
+    NODE* p = T;
+
+    if(p==NULL)
+    return;
+
+    else
+    {
+        if(p->left!=NULL)
+            Traversal(p->left,c);
+
+        Arr[(*c)++] = p;
+
+        if(p->right!=NULL)
+            Traversal(p->right,c);
+    }
+}
+
+NODE* MakePerfectlyBalanced(ll s, ll e)
+{
+    if(s>e)
+    {
+        return NULL;
+    }
+    else
+    {
+        NODE* T;
+        T = Arr[(s+e)/2];
+        T->left = MakePerfectlyBalanced(s,(s+e)/2-1);
+        T->right = MakePerfectlyBalanced((s+e)/2+1,e);
+        return T;
+    }
+}
+
+NODE* Insert(NODE* T,NODE* v,ll* l,ll* r)
+{
+    NODE* p = T;
+    NODE* prev = NULL;
+    ll x = v->val;
+
+    if(x>p->val)
+        (*r)++;
+    else
+        (*l)++;
+
+    while(p != NULL)
+    {
+        prev = p;
+        if(p->val<x)
+            p = p->right;
+        else
+            p = p->left;
+    }
+
+    if(prev->val<x)
+        prev->right = v;
+    else
+        prev->left = v;
+    ll size = *l + *r;
+    
+    if((*l > (3*size)/4)||(*r > (3*size)/4))
+    {
+        ll c = 0;
+        Arr = malloc((size+1)*sizeof(NODE*));
+        Traversal(T,&c);
+        T = MakePerfectlyBalanced(0,c-1);
+        free(Arr);
+        *l = (c-1)/2;
+        *r = (c-1) - (c-1)/2;
+    }
+    return T;
+}
+
+int main()
+{
+    clock_t start_t,end_t;
+    double total_t;
+    Time_i = malloc(10000000*sizeof(double));
+    double* Time_tot = malloc(1000*sizeof(double));
+    NODE* T = NULL;
+    NODE* ins = NULL;
+    ll l_size=0,r_size=0;
+    for(ll i=1;i<=10000000;i++)
+    {
+        ins = CreateNode(i);
+        start_t = clock();
+
+        if(T==NULL)
+            T = ins;
+        else
+            T = Insert(T,ins,&l_size,&r_size);
+        
+        end_t = clock();
+        total_t = (double)(end_t-start_t)/CLOCKS_PER_SEC;
+        Time_i[i-1] = total_t;
+        printf("%lld %lf\n",i,Time_i[i-1]);
+    }
+
+    // double tot=0;
+    // ll j = 0;
+    // for(ll i = 0;i<100000;i++)
+    // {
+    //     tot += Time_i[i];
+    //     if((i+1)%(500)==0)
+    //     {
+    //         Time_tot[j++] = tot;
+    //         printf("%lld %lf\n",i+1,Time_tot[j]);
+    //     }   
+    // }
+    
+    return 0;
+}
